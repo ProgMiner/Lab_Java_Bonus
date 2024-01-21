@@ -40,6 +40,15 @@ public class IntVariable implements Variable<Integer> {
         };
     }
 
+    @Override
+    public String toString() {
+        if (isConstant()) {
+            return "" + begin;
+        }
+
+        return begin + ".." + end + ", " + step;
+    }
+
     public static IntVariable constant(int value) {
         return new IntVariable(value, value, 0);
     }

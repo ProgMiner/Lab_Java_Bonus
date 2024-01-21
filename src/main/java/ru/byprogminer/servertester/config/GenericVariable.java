@@ -43,9 +43,13 @@ public class GenericVariable<T> implements Variable<T> {
         };
     }
 
-    public interface VarProps<T> extends Comparator<T> {
+    @Override
+    public String toString() {
+        if (isConstant()) {
+            return Objects.toString(begin);
+        }
 
-        T increment(T value);
+        return begin + ".." + end + ", " + props.printStep();
     }
 
     public static <T> GenericVariable<T> constant(T value) {
@@ -64,5 +68,12 @@ public class GenericVariable<T> implements Variable<T> {
         }
 
         return new GenericVariable<>(props, begin, end);
+    }
+
+    public interface VarProps<T> extends Comparator<T> {
+
+        T increment(T value);
+
+        String printStep();
     }
 }

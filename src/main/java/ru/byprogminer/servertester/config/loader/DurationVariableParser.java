@@ -1,42 +1,48 @@
 package ru.byprogminer.servertester.config.loader;
 
 import ru.byprogminer.servertester.config.GenericVariable;
+import ru.byprogminer.servertester.config.PrettyDuration;
 import ru.byprogminer.servertester.config.Variable;
 
 import java.time.Duration;
 
 
 public class DurationVariableParser
-        extends AbstractVariableParser<Duration, Duration>
-        implements VariableParser<Duration> {
+        extends AbstractVariableParser<PrettyDuration, Duration>
+        implements VariableParser<PrettyDuration> {
 
     @Override
-    protected ParseResult<Duration> parseValue(String str) {
-        return Parsers.duration(str);
+    protected ParseResult<PrettyDuration> parseValue(String str) {
+        return Parsers.duration(str).map(PrettyDuration::new);
     }
 
     @Override
     protected ParseResult<Duration> parseStep(String str) {
-        return parseValue(str);
+        return Parsers.duration(str);
     }
 
     @Override
-    protected Variable<Duration> constant(Duration value) {
+    protected Variable<PrettyDuration> constant(PrettyDuration value) {
         return GenericVariable.constant(value);
     }
 
     @Override
-    protected Variable<Duration> range(Duration begin, Duration end, Duration step) {
-        return GenericVariable.range(new GenericVariable.VarProps<Duration>() {
+    protected Variable<PrettyDuration> range(PrettyDuration begin, PrettyDuration end, Duration step) {
+        return GenericVariable.range(new GenericVariable.VarProps<PrettyDuration>() {
 
             @Override
-            public Duration increment(Duration value) {
-                return value.plus(step);
+            public PrettyDuration increment(PrettyDuration value) {
+                return value.map(v -> v.plus(step));
             }
 
             @Override
-            public int compare(Duration a, Duration b) {
-                return a.compareTo(b);
+            public String printStep() {
+                return new PrettyDuration(step).toString();
+            }
+
+            @Override
+            public int compare(PrettyDuration a, PrettyDuration b) {
+                return a.value.compareTo(b.value);
             }
         }, begin, end);
     }

@@ -51,9 +51,6 @@ public final class Parsers {
         components.add(first.value);
         components.addAll(rest.value);
 
-        final ParseResult<Long> ms = optional(s -> integer(string(".", s)), str).map(v -> v == null ? 0 : v);
-        str = ms.rest;
-
         final long seconds;
         switch (components.size()) {
             case 1:
@@ -72,7 +69,7 @@ public final class Parsers {
                 throw new IllegalArgumentException("unsupported amount of duration components: " + components.size());
         }
 
-        return new ParseResult<>(Duration.ofSeconds(seconds, ms.value * 1000_000), str);
+        return new ParseResult<>(Duration.ofSeconds(seconds), str);
     }
 
     public static <T> ParseResult<T> optional(Function<String, ParseResult<T>> parser, String str) {

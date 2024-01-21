@@ -1,6 +1,8 @@
 package ru.byprogminer.servertester;
 
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 
 public final class Utils {
@@ -17,6 +19,14 @@ public final class Utils {
         } else {
             current.addSuppressed(next);
             return current;
+        }
+    }
+
+    public static void awaitTermination(ExecutorService executorService) throws InterruptedException {
+        final boolean res = executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+
+        if (!res) {
+            throw new RuntimeException("wut");
         }
     }
 }

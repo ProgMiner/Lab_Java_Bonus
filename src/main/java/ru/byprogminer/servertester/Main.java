@@ -19,10 +19,8 @@ public class Main {
 
     private static final Path configPath = Paths.get("./config.properties");
 
-    public static void main(String[] args) {
-        final TestConfig config = loadConfig(args);
-
-        // TODO
+    public static void main(String[] args) throws IOException {
+        new TestRunner(loadConfig(args)).runTest();
     }
 
     private static TestConfig loadConfig(String[] args) {

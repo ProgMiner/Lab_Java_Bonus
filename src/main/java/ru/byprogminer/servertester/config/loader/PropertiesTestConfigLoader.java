@@ -1,10 +1,10 @@
 package ru.byprogminer.servertester.config.loader;
 
 import ru.byprogminer.servertester.Utils;
+import ru.byprogminer.servertester.config.PrettyDuration;
 import ru.byprogminer.servertester.config.TestConfig;
 
 import java.nio.file.Paths;
-import java.time.Duration;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -14,7 +14,7 @@ public class PropertiesTestConfigLoader implements TestConfigLoader {
     private final Properties properties;
 
     private final VariableParser<Integer> intVariableParser = new IntVariableParser();
-    private final VariableParser<Duration> durationVariableParser = new DurationVariableParser();
+    private final VariableParser<PrettyDuration> durationVariableParser = new DurationVariableParser();
 
     public PropertiesTestConfigLoader(Properties properties) {
         this.properties = Objects.requireNonNull(properties);

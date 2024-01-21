@@ -5,20 +5,22 @@ import ru.byprogminer.servertester.Utils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Duration;
+import java.util.Iterator;
 import java.util.Objects;
 
 
-public class TestConfig {
+public class TestConfig implements Iterable<TestRunConfig> {
 
     private Architecture arch;
     private Integer clientRequests;
 
     private Variable<Integer> arraySize;
     private Variable<Integer> clients;
-    private Variable<Duration> requestDelta;
+    private Variable<PrettyDuration> requestDelta;
 
     private Path outputDir;
+
+    private Field rangeField;
 
     public void verify() {
         RuntimeException ex = null;
@@ -45,14 +47,20 @@ public class TestConfig {
 
             if (arraySize.isConstant()) {
                 --variables;
+            } else {
+                rangeField = Field.ARRAY_SIZE;
             }
 
             if (clients.isConstant()) {
                 --variables;
+            } else {
+                rangeField = Field.CLIENTS;
             }
 
             if (requestDelta.isConstant()) {
                 --variables;
+            } else {
+                rangeField = Field.REQUEST_DELTA;
             }
 
             if (variables != 1) {
@@ -65,6 +73,24 @@ public class TestConfig {
         if (ex != null) {
             throw ex;
         }
+    }
+
+    public String getVariableParameter() {
+        return rangeField.name;
+    }
+
+    @Override
+    public Iterator<TestRunConfig> iterator() {
+        return rangeField.iterator(this);
+    }
+
+    private TestRunConfig createInitialRunConfig() {
+        return new TestRunConfig(
+                clientRequests,
+                arraySize.iterator().next(),
+                clients.iterator().next(),
+                requestDelta.iterator().next()
+        );
     }
 
     public Architecture getArch() {
@@ -99,11 +125,11 @@ public class TestConfig {
         this.clients = Objects.requireNonNull(clients, "clients");
     }
 
-    public Variable<Duration> getRequestDelta() {
+    public Variable<PrettyDuration> getRequestDelta() {
         return requestDelta;
     }
 
-    public void setRequestDelta(Variable<Duration> requestDelta) {
+    public void setRequestDelta(Variable<PrettyDuration> requestDelta) {
         this.requestDelta = Objects.requireNonNull(requestDelta, "requestDelta");
     }
 
@@ -128,9 +154,6 @@ public class TestConfig {
             Object getValue(TestConfig self) {
                 return self.arch;
             }
-
-            @Override
-            void verify(TestConfig self) {}
         },
 
         CLIENT_REQUESTS("number of requests per client") {
@@ -148,7 +171,7 @@ public class TestConfig {
             }
         },
 
-        ARRAY_SIZE("size of array to sort") {
+        ARRAY_SIZE("array size") {
 
             @Override
             Object getValue(TestConfig self) {
@@ -160,6 +183,32 @@ public class TestConfig {
                 if (self.arraySize.iterator().next() <= 0) {
                     throw new IllegalArgumentException("array size must be positive");
                 }
+            }
+
+            @Override
+            Iterator<TestRunConfig> iterator(TestConfig self) {
+                final Variable<Integer> value = self.arraySize;
+
+                if (value.isConstant()) {
+                    return null;
+                }
+
+                final TestRunConfig initial = self.createInitialRunConfig();
+
+                return new Iterator<TestRunConfig>() {
+
+                    private final Iterator<Integer> it = value.iterator();
+
+                    @Override
+                    public boolean hasNext() {
+                        return it.hasNext();
+                    }
+
+                    @Override
+                    public TestRunConfig next() {
+                        return initial.withArraySize(it.next());
+                    }
+                };
             }
         },
 
@@ -176,6 +225,32 @@ public class TestConfig {
                     throw new IllegalArgumentException("number of clients must be positive");
                 }
             }
+
+            @Override
+            Iterator<TestRunConfig> iterator(TestConfig self) {
+                final Variable<Integer> value = self.clients;
+
+                if (value.isConstant()) {
+                    return null;
+                }
+
+                final TestRunConfig initial = self.createInitialRunConfig();
+
+                return new Iterator<TestRunConfig>() {
+
+                    private final Iterator<Integer> it = value.iterator();
+
+                    @Override
+                    public boolean hasNext() {
+                        return it.hasNext();
+                    }
+
+                    @Override
+                    public TestRunConfig next() {
+                        return initial.withClients(it.next());
+                    }
+                };
+            }
         },
 
         REQUEST_DELTA("duration between client requests") {
@@ -187,11 +262,37 @@ public class TestConfig {
 
             @Override
             void verify(TestConfig self) {
-                final Duration value = self.requestDelta.iterator().next();
+                final PrettyDuration value = self.requestDelta.iterator().next();
 
-                if (value.isNegative() || value.isZero()) {
+                if (value.value.isNegative() || value.value.isZero()) {
                     throw new IllegalArgumentException("duration between client requests must be positive");
                 }
+            }
+
+            @Override
+            Iterator<TestRunConfig> iterator(TestConfig self) {
+                final Variable<PrettyDuration> value = self.requestDelta;
+
+                if (value.isConstant()) {
+                    return null;
+                }
+
+                final TestRunConfig initial = self.createInitialRunConfig();
+
+                return new Iterator<TestRunConfig>() {
+
+                    private final Iterator<PrettyDuration> it = value.iterator();
+
+                    @Override
+                    public boolean hasNext() {
+                        return it.hasNext();
+                    }
+
+                    @Override
+                    public TestRunConfig next() {
+                        return initial.withRequestDelta(it.next());
+                    }
+                };
             }
         },
 
@@ -219,6 +320,11 @@ public class TestConfig {
         }
 
         abstract Object getValue(TestConfig self);
-        abstract void verify(TestConfig self);
+
+        void verify(TestConfig self) {}
+
+        Iterator<TestRunConfig> iterator(TestConfig self) {
+            return null;
+        }
     }
 }

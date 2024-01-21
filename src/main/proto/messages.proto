@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+option java_package = "ru.byprogminer.servertester.server";
+
+
+message SortRequest {
+  repeated int32 value = 1;
+}
+
+message SortResponse {
+  repeated int32 value = 1;
+}
