@@ -5,19 +5,19 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public final class ServerTestMetrics {
 
-    private final int clients;
+    private final int requests;
 
     public final AtomicLong computationTime = new AtomicLong();
     public final AtomicLong handleTime = new AtomicLong();
 
-    public ServerTestMetrics(int clients) {
-        this.clients = clients;
+    public ServerTestMetrics(int requests) {
+        this.requests = requests;
     }
 
     public ServerTestResult freeze() {
         return new ServerTestResult(
-                computationTime.get() / clients,
-                handleTime.get() / clients
+                computationTime.get() / requests,
+                handleTime.get() / requests
         );
     }
 }

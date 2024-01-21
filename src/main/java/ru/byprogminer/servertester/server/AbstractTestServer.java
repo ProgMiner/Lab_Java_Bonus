@@ -29,7 +29,7 @@ public abstract class AbstractTestServer implements TestServer {
     public AbstractTestServer(TestRunConfig config) {
         this.config = config;
 
-        this.metrics = new ServerTestMetrics(config.clients);
+        this.metrics = new ServerTestMetrics(config.clients * config.clientRequests);
     }
 
     @Override
