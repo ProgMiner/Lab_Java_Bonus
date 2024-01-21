@@ -89,7 +89,8 @@ public class TestConfig implements Iterable<TestRunConfig> {
                 clientRequests,
                 arraySize.iterator().next(),
                 clients.iterator().next(),
-                requestDelta.iterator().next()
+                requestDelta.iterator().next(),
+                rangeField::getValue
         );
     }
 
@@ -164,6 +165,11 @@ public class TestConfig implements Iterable<TestRunConfig> {
             }
 
             @Override
+            Integer getValue(TestRunConfig runConfig) {
+                return runConfig.clientRequests;
+            }
+
+            @Override
             void verify(TestConfig self) {
                 if (self.clientRequests <= 0) {
                     throw new IllegalArgumentException("number of requests per client must be positive");
@@ -176,6 +182,11 @@ public class TestConfig implements Iterable<TestRunConfig> {
             @Override
             Object getValue(TestConfig self) {
                 return self.arraySize;
+            }
+
+            @Override
+            Integer getValue(TestRunConfig runConfig) {
+                return runConfig.arraySize;
             }
 
             @Override
@@ -220,6 +231,11 @@ public class TestConfig implements Iterable<TestRunConfig> {
             }
 
             @Override
+            Integer getValue(TestRunConfig runConfig) {
+                return runConfig.clients;
+            }
+
+            @Override
             void verify(TestConfig self) {
                 if (self.clients.iterator().next() <= 0) {
                     throw new IllegalArgumentException("number of clients must be positive");
@@ -261,11 +277,16 @@ public class TestConfig implements Iterable<TestRunConfig> {
             }
 
             @Override
+            PrettyDuration getValue(TestRunConfig runConfig) {
+                return runConfig.requestDelta;
+            }
+
+            @Override
             void verify(TestConfig self) {
                 final PrettyDuration value = self.requestDelta.iterator().next();
 
-                if (value.value.isNegative() || value.value.isZero()) {
-                    throw new IllegalArgumentException("duration between client requests must be positive");
+                if (value.value.isNegative()) {
+                    throw new IllegalArgumentException("duration between client requests must not be negative");
                 }
             }
 
@@ -320,6 +341,10 @@ public class TestConfig implements Iterable<TestRunConfig> {
         }
 
         abstract Object getValue(TestConfig self);
+
+        Object getValue(TestRunConfig runConfig) {
+            throw new UnsupportedOperationException("not in run config");
+        }
 
         void verify(TestConfig self) {}
 

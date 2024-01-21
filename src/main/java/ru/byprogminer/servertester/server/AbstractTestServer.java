@@ -13,7 +13,6 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.LongConsumer;
 
 
 public abstract class AbstractTestServer implements TestServer {
@@ -55,16 +54,6 @@ public abstract class AbstractTestServer implements TestServer {
         return result;
     }
 
-    protected abstract int getConnectedClients();
-
-    protected void increaseMetrics(LongConsumer block) {
-        final long currentTime = System.currentTimeMillis();
-
-        if (getConnectedClients() == config.clients) {
-            block.accept(currentTime);
-        }
-    }
-
     protected void addException(Throwable e) {
         exceptions.add(e);
     }
@@ -74,7 +63,7 @@ public abstract class AbstractTestServer implements TestServer {
 
         final byte[] response = handleRequest0(request);
 
-        increaseMetrics(t -> metrics.computationTime.addAndGet(t - beginTime));
+        metrics.computationTime.addAndGet(System.currentTimeMillis() - beginTime);
 
         return response;
     }

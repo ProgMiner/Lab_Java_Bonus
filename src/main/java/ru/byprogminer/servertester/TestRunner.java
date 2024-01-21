@@ -1,21 +1,18 @@
 package ru.byprogminer.servertester;
 
+import com.opencsv.CSVWriter;
 import ru.byprogminer.servertester.client.TestClientRunner;
 import ru.byprogminer.servertester.config.TestConfig;
 import ru.byprogminer.servertester.config.TestRunConfig;
 import ru.byprogminer.servertester.server.BlockingTestServer;
 import ru.byprogminer.servertester.server.TestServer;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -23,6 +20,7 @@ import java.util.stream.Stream;
 public class TestRunner {
 
     private static final String TEST_CONFIG_FILENAME = "config.txt";
+    private static final String DATA_FILENAME = "data.csv";
 
     private static final Map<TestConfig.Architecture, Function<TestRunConfig, TestServer>> ARCHITECTURES
             = constructArchitecturesMap();
@@ -42,6 +40,8 @@ public class TestRunner {
 
     public void runTest() throws IOException {
         printTestConfig();
+
+        final Map<TestRunConfig, TestResult> results = new LinkedHashMap<>();
 
         for (final TestRunConfig runConfig : config) {
             System.out.println("Run config: " + runConfig);
@@ -76,17 +76,50 @@ public class TestRunner {
                     clientRunner.getTestResult()
             );
 
-            System.out.println("Test result: " + result);
+            results.put(runConfig, result);
         }
 
-        // TODO collect and save results
+        printResults(results);
     }
 
     private void printTestConfig() throws IOException {
         final Path path = config.getOutputDir().resolve(TEST_CONFIG_FILENAME);
 
-        try (final BufferedWriter writer = Files.newBufferedWriter(path)) {
+        try (final Writer writer = Files.newBufferedWriter(path)) {
             printTestConfig(config, writer);
+        }
+    }
+
+    private void printResults(Map<TestRunConfig, TestResult> results) throws IOException {
+        final Path path = config.getOutputDir().resolve(DATA_FILENAME);
+
+        try (final Writer writer = Files.newBufferedWriter(path)) {
+            printResults(results, writer);
+        }
+    }
+
+    private void printResults(Map<TestRunConfig, TestResult> results, Writer writer) throws IOException {
+        final CSVWriter csvWriter = new CSVWriter(writer);
+
+        csvWriter.writeNext(new String[] {
+                config.getVariableParameter(),
+                "computation time",
+                "server request time",
+                "client request time",
+        });
+
+        for (final Map.Entry<TestRunConfig, TestResult> entry : results.entrySet()) {
+            csvWriter.writeNext(new String[] {
+                    entry.getKey().getVariableParameter().toString(),
+                    Long.toString(entry.getValue().server.computationTime),
+                    Long.toString(entry.getValue().server.handleTime),
+                    Long.toString(entry.getValue().client.averageRequestTime),
+            });
+        }
+
+        final IOException ex = csvWriter.getException();
+        if (ex != null) {
+            throw ex;
         }
     }
 
@@ -98,6 +131,8 @@ public class TestRunner {
         out.println("Array size: " + config.getArraySize());
         out.println("Number of clients: " + config.getClients());
         out.println("Duration between client requests: " + config.getRequestDelta());
+
+        out.flush();
     }
 
     private static Map<TestConfig.Architecture, Function<TestRunConfig, TestServer>> constructArchitecturesMap() {

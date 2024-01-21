@@ -60,11 +60,6 @@ public class BlockingTestServer extends AbstractTestServer implements TestServer
         return serverSocket.getLocalPort();
     }
 
-    @Override
-    protected int getConnectedClients() {
-        return clients.size();
-    }
-
     private void serverRoutine() {
         try (final ServerSocket ignored = serverSocket) {
             while (!serverSocket.isClosed()) {
@@ -150,7 +145,7 @@ public class BlockingTestServer extends AbstractTestServer implements TestServer
                                     out.writeInt(response.length);
                                     out.write(response);
 
-                                    increaseMetrics(t -> metrics.handleTime.addAndGet(t - requestBeginTime));
+                                    metrics.handleTime.addAndGet(System.currentTimeMillis() - requestBeginTime);
                                 } catch (Throwable e) {
                                     addException(e);
                                 }

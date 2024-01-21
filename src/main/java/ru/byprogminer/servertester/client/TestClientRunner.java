@@ -64,34 +64,34 @@ public class TestClientRunner {
     }
 
     private void clientRoutine() {
+        final long requestDelta = config.requestDelta.value.toMillis();
+
         try (final Socket socket = new Socket("127.0.0.1", port)) {
             final long beginTime = System.currentTimeMillis();
 
             final DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+            final DataInputStream in = new DataInputStream(socket.getInputStream());
 
             for (int i = 0; i < config.clientRequests; ++i) {
                 if (i > 0) {
-                    Thread.sleep(config.requestDelta.value.toMillis());
+                    Thread.sleep(requestDelta);
                 }
 
                 final byte[] request = createRequest();
 
                 out.writeInt(request.length);
                 out.write(request);
-            }
 
-            final DataInputStream in = new DataInputStream(socket.getInputStream());
-
-            for (int i = 0; i < config.clientRequests; ++i) {
                 final int responseSize = in.readInt();
-
                 final byte[] response = new byte[responseSize];
                 in.readFully(response);
 
                 checkResponse(response);
             }
 
-            final long averageRequestTime = (System.currentTimeMillis() - beginTime) / config.clientRequests;
+            final long fullTime = System.currentTimeMillis() - beginTime;
+            final long deltaTime = requestDelta * (config.clientRequests - 1);
+            final long averageRequestTime = (fullTime - deltaTime) / config.clientRequests;
             metrics.averageRequestTime.addAndGet(averageRequestTime);
         } catch (Throwable e) {
             addException(e);

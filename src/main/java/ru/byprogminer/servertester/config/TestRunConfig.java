@@ -1,6 +1,7 @@
 package ru.byprogminer.servertester.config;
 
 import java.util.Objects;
+import java.util.function.Function;
 
 
 public class TestRunConfig {
@@ -10,27 +11,40 @@ public class TestRunConfig {
     public final int clients;
     public final PrettyDuration requestDelta;
 
-    public TestRunConfig(int clientRequests, int arraySize, int clients, PrettyDuration requestDelta) {
+    private final Function<TestRunConfig, Object> variableParameterGetter;
+
+    public TestRunConfig(
+            int clientRequests,
+            int arraySize,
+            int clients,
+            PrettyDuration requestDelta,
+            Function<TestRunConfig, Object> variableParameterGetter
+    ) {
         this.clientRequests = clientRequests;
         this.arraySize = arraySize;
         this.clients = clients;
         this.requestDelta = Objects.requireNonNull(requestDelta);
+        this.variableParameterGetter = Objects.requireNonNull(variableParameterGetter);
     }
 
     public TestRunConfig withClientRequests(int clientRequests) {
-        return new TestRunConfig(clientRequests, arraySize, clients, requestDelta);
+        return new TestRunConfig(clientRequests, arraySize, clients, requestDelta, variableParameterGetter);
     }
 
     public TestRunConfig withArraySize(int arraySize) {
-        return new TestRunConfig(clientRequests, arraySize, clients, requestDelta);
+        return new TestRunConfig(clientRequests, arraySize, clients, requestDelta, variableParameterGetter);
     }
 
     public TestRunConfig withClients(int clients) {
-        return new TestRunConfig(clientRequests, arraySize, clients, requestDelta);
+        return new TestRunConfig(clientRequests, arraySize, clients, requestDelta, variableParameterGetter);
     }
 
     public TestRunConfig withRequestDelta(PrettyDuration requestDelta) {
-        return new TestRunConfig(clientRequests, arraySize, clients, requestDelta);
+        return new TestRunConfig(clientRequests, arraySize, clients, requestDelta, variableParameterGetter);
+    }
+
+    public Object getVariableParameter() {
+        return variableParameterGetter.apply(this);
     }
 
     @Override

@@ -37,7 +37,11 @@ public class GenericVariable<T> implements Variable<T> {
             @Override
             public T next() {
                 final T result = value;
-                value = props.increment(value);
+
+                if (props != null) {
+                    value = props.increment(value);
+                }
+
                 return result;
             }
         };
