@@ -1,11 +1,11 @@
 package ru.byprogminer.servertester.server;
 
-
 import java.util.concurrent.atomic.AtomicLong;
+
 
 public final class ServerTestMetrics {
 
-    public final int clients;
+    private final int clients;
 
     public final AtomicLong computationTime = new AtomicLong();
     public final AtomicLong handleTime = new AtomicLong();

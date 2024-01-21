@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option java_package = "ru.byprogminer.servertester.server";
+option java_package = "ru.byprogminer.servertester";
 
 
 message SortRequest {

@@ -1,6 +1,7 @@
 package ru.byprogminer.servertester.server;
 
 import com.google.protobuf.InvalidProtocolBufferException;
+import ru.byprogminer.servertester.Messages;
 import ru.byprogminer.servertester.Utils;
 import ru.byprogminer.servertester.config.TestRunConfig;
 
@@ -18,6 +19,7 @@ import java.util.function.LongConsumer;
 public abstract class AbstractTestServer implements TestServer {
 
     protected final TestRunConfig config;
+
     protected final ServerTestMetrics metrics;
 
     protected final ExecutorService taskExecutor = Executors
@@ -27,6 +29,7 @@ public abstract class AbstractTestServer implements TestServer {
 
     public AbstractTestServer(TestRunConfig config) {
         this.config = config;
+
         this.metrics = new ServerTestMetrics(config.clients);
     }
 

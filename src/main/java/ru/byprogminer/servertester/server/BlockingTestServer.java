@@ -5,9 +5,11 @@ import ru.byprogminer.servertester.config.TestRunConfig;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -87,6 +89,8 @@ public class BlockingTestServer extends AbstractTestServer implements TestServer
             }
         } catch (Throwable e) {
             addException(e);
+        } finally {
+            taskExecutor.shutdown();
         }
     }
 
@@ -109,7 +113,6 @@ public class BlockingTestServer extends AbstractTestServer implements TestServer
         public void shutdown() throws IOException, InterruptedException {
             socket.close();
             readThread.join();
-            writeExecutor.shutdown();
             Utils.awaitTermination(writeExecutor);
         }
 
@@ -119,11 +122,23 @@ public class BlockingTestServer extends AbstractTestServer implements TestServer
                 final DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 
                 while (!socket.isClosed()) {
-                    final int n = in.readInt();
+                    final int requestSize;
+
+                    try {
+                        requestSize = in.readInt();
+                    } catch (SocketException e) {
+                        if (socket.isClosed()) {
+                            break;
+                        }
+
+                        throw e;
+                    } catch (EOFException e) {
+                        break;
+                    }
 
                     final long requestBeginTime = System.currentTimeMillis();
 
-                    final byte[] request = new byte[n];
+                    final byte[] request = new byte[requestSize];
                     in.readFully(request);
 
                     taskExecutor.submit(() -> {
@@ -149,6 +164,7 @@ public class BlockingTestServer extends AbstractTestServer implements TestServer
                 addException(e);
             } finally {
                 clients.remove(socket);
+                writeExecutor.shutdown();
             }
         }
     }

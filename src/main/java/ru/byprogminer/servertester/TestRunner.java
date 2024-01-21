@@ -1,5 +1,6 @@
 package ru.byprogminer.servertester;
 
+import ru.byprogminer.servertester.client.TestClientRunner;
 import ru.byprogminer.servertester.config.TestConfig;
 import ru.byprogminer.servertester.config.TestRunConfig;
 import ru.byprogminer.servertester.server.BlockingTestServer;
@@ -11,8 +12,12 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 
 public class TestRunner {
@@ -44,7 +49,8 @@ public class TestRunner {
             final TestServer server = serverFactory.apply(runConfig);
             server.serve();
 
-            // TODO run clients
+            final TestClientRunner clientRunner = new TestClientRunner(runConfig, server.getPort());
+            clientRunner.runClients();
 
             while (true) {
                 try {
@@ -55,14 +61,25 @@ public class TestRunner {
                 }
             }
 
-            final Throwable e = server.getExceptions().stream().reduce(null, Utils::nextException);
+            final Throwable e = Stream.concat(
+                    server.getExceptions().stream(),
+                    clientRunner.getExceptions().stream()
+            ).reduce(null, Utils::nextException);
+
             if (e != null) {
                 e.printStackTrace();
                 break;
             }
 
-            System.out.println("Test result: " + server.getTestResult());
+            final TestResult result = new TestResult(
+                    server.getTestResult(),
+                    clientRunner.getTestResult()
+            );
+
+            System.out.println("Test result: " + result);
         }
+
+        // TODO collect and save results
     }
 
     private void printTestConfig() throws IOException {
