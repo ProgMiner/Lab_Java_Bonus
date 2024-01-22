@@ -1,0 +1,5 @@
+Server architecture: NONBLOCK
+Requests per client: 20
+Array size: 10000..100000, 1000
+Number of clients: 50
+Duration between client requests (ms): 50

@@ -1,0 +1,5 @@
+Server architecture: BLOCK
+Requests per client: 20
+Array size: 50000
+Number of clients: 1..100, 1
+Duration between client requests (ms): 50
