@@ -100,14 +100,14 @@ public class AsyncTestServer extends AbstractTestServer implements TestServer {
                     }
                 }
             } catch (Throwable e) {
-                clients.remove(channel);
+                close();
                 addException(e);
             }
         }
 
         @Override
         public void failed(Throwable exc, Client attachment) {
-            clients.remove(channel);
+            close();
 
             if (!channel.isOpen()) {
                 return;
@@ -118,7 +118,7 @@ public class AsyncTestServer extends AbstractTestServer implements TestServer {
 
         private boolean readCompleted(int wasRead) {
             if (wasRead < 0) {
-                clients.remove(channel);
+                close();
                 return false;
             }
 
@@ -185,7 +185,7 @@ public class AsyncTestServer extends AbstractTestServer implements TestServer {
 
         private boolean writeCompleted(int wasWrote) {
             if (wasWrote < 0) {
-                clients.remove(channel);
+                close();
                 return false;
             }
 
@@ -205,6 +205,16 @@ public class AsyncTestServer extends AbstractTestServer implements TestServer {
             writeMode = false;
             channel.read(buffer, this, this);
             return false;
+        }
+
+        private void close() {
+            clients.remove(channel);
+
+            try {
+                channel.close();
+            } catch (IOException e) {
+                addException(e);
+            }
         }
     }
 }
