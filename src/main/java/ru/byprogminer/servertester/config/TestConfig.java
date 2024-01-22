@@ -16,7 +16,7 @@ public class TestConfig implements Iterable<TestRunConfig> {
 
     private Variable<Integer> arraySize;
     private Variable<Integer> clients;
-    private Variable<PrettyDuration> requestDelta;
+    private Variable<Integer> requestDelta;
 
     private Path outputDir;
 
@@ -126,11 +126,11 @@ public class TestConfig implements Iterable<TestRunConfig> {
         this.clients = Objects.requireNonNull(clients, "clients");
     }
 
-    public Variable<PrettyDuration> getRequestDelta() {
+    public Variable<Integer> getRequestDelta() {
         return requestDelta;
     }
 
-    public void setRequestDelta(Variable<PrettyDuration> requestDelta) {
+    public void setRequestDelta(Variable<Integer> requestDelta) {
         this.requestDelta = Objects.requireNonNull(requestDelta, "requestDelta");
     }
 
@@ -269,7 +269,7 @@ public class TestConfig implements Iterable<TestRunConfig> {
             }
         },
 
-        REQUEST_DELTA("duration between client requests") {
+        REQUEST_DELTA("duration between client requests (ms)") {
 
             @Override
             Object getValue(TestConfig self) {
@@ -277,22 +277,20 @@ public class TestConfig implements Iterable<TestRunConfig> {
             }
 
             @Override
-            PrettyDuration getValue(TestRunConfig runConfig) {
+            Integer getValue(TestRunConfig runConfig) {
                 return runConfig.requestDelta;
             }
 
             @Override
             void verify(TestConfig self) {
-                final PrettyDuration value = self.requestDelta.iterator().next();
-
-                if (value.value.isNegative()) {
+                if (self.requestDelta.iterator().next() < 0) {
                     throw new IllegalArgumentException("duration between client requests must not be negative");
                 }
             }
 
             @Override
             Iterator<TestRunConfig> iterator(TestConfig self) {
-                final Variable<PrettyDuration> value = self.requestDelta;
+                final Variable<Integer> value = self.requestDelta;
 
                 if (value.isConstant()) {
                     return null;
@@ -302,7 +300,7 @@ public class TestConfig implements Iterable<TestRunConfig> {
 
                 return new Iterator<TestRunConfig>() {
 
-                    private final Iterator<PrettyDuration> it = value.iterator();
+                    private final Iterator<Integer> it = value.iterator();
 
                     @Override
                     public boolean hasNext() {

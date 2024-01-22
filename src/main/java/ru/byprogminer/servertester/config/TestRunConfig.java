@@ -9,7 +9,7 @@ public class TestRunConfig {
     public final int clientRequests;
     public final int arraySize;
     public final int clients;
-    public final PrettyDuration requestDelta;
+    public final int requestDelta;
 
     private final Function<TestRunConfig, Object> variableParameterGetter;
 
@@ -17,13 +17,13 @@ public class TestRunConfig {
             int clientRequests,
             int arraySize,
             int clients,
-            PrettyDuration requestDelta,
+            int requestDelta,
             Function<TestRunConfig, Object> variableParameterGetter
     ) {
         this.clientRequests = clientRequests;
         this.arraySize = arraySize;
         this.clients = clients;
-        this.requestDelta = Objects.requireNonNull(requestDelta);
+        this.requestDelta = requestDelta;
         this.variableParameterGetter = Objects.requireNonNull(variableParameterGetter);
     }
 
@@ -39,7 +39,7 @@ public class TestRunConfig {
         return new TestRunConfig(clientRequests, arraySize, clients, requestDelta, variableParameterGetter);
     }
 
-    public TestRunConfig withRequestDelta(PrettyDuration requestDelta) {
+    public TestRunConfig withRequestDelta(int requestDelta) {
         return new TestRunConfig(clientRequests, arraySize, clients, requestDelta, variableParameterGetter);
     }
 

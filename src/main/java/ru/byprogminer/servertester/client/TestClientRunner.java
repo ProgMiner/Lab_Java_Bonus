@@ -64,8 +64,6 @@ public class TestClientRunner {
     }
 
     private void clientRoutine() {
-        final long requestDelta = config.requestDelta.value.toMillis();
-
         try (final Socket socket = new Socket("127.0.0.1", port)) {
             final long beginTime = System.currentTimeMillis();
 
@@ -74,7 +72,7 @@ public class TestClientRunner {
 
             for (int i = 0; i < config.clientRequests; ++i) {
                 if (i > 0) {
-                    Thread.sleep(requestDelta);
+                    Thread.sleep(config.requestDelta);
                 }
 
                 final byte[] request = createRequest();
@@ -90,7 +88,7 @@ public class TestClientRunner {
             }
 
             final long fullTime = System.currentTimeMillis() - beginTime;
-            final long deltaTime = requestDelta * (config.clientRequests - 1);
+            final long deltaTime = ((long) config.requestDelta) * (config.clientRequests - 1);
             final long averageRequestTime = (fullTime - deltaTime) / config.clientRequests;
             metrics.averageRequestTime.addAndGet(averageRequestTime);
         } catch (Throwable e) {

@@ -132,7 +132,7 @@ public class TestRunner {
         out.println("Requests per client: " + config.getClientRequests());
         out.println("Array size: " + config.getArraySize());
         out.println("Number of clients: " + config.getClients());
-        out.println("Duration between client requests: " + config.getRequestDelta());
+        out.println("Duration between client requests (ms): " + config.getRequestDelta());
 
         out.flush();
     }

@@ -1,7 +1,6 @@
 package ru.byprogminer.servertester.config.loader;
 
 import ru.byprogminer.servertester.Utils;
-import ru.byprogminer.servertester.config.PrettyDuration;
 import ru.byprogminer.servertester.config.TestConfig;
 
 import java.nio.file.Paths;
@@ -14,7 +13,6 @@ public class PropertiesTestConfigLoader implements TestConfigLoader {
     private final Properties properties;
 
     private final VariableParser<Integer> intVariableParser = new IntVariableParser();
-    private final VariableParser<PrettyDuration> durationVariableParser = new DurationVariableParser();
 
     public PropertiesTestConfigLoader(Properties properties) {
         this.properties = Objects.requireNonNull(properties);
@@ -81,7 +79,7 @@ public class PropertiesTestConfigLoader implements TestConfigLoader {
 
             @Override
             public void handle(String value, PropertiesTestConfigLoader self, TestConfig config) {
-                config.setRequestDelta(self.durationVariableParser.parse(value));
+                config.setRequestDelta(self.intVariableParser.parse(value));
             }
         },
 
