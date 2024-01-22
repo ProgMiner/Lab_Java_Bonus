@@ -144,7 +144,7 @@ public class TestConfig implements Iterable<TestRunConfig> {
 
     public enum Architecture {
 
-        BLOCK, NON_BLOCK, ASYNC
+        BLOCK, NONBLOCK, ASYNC
     }
 
     private enum Field {
