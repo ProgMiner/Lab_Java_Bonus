@@ -4,6 +4,7 @@ import com.opencsv.CSVWriter;
 import ru.byprogminer.servertester.client.TestClientRunner;
 import ru.byprogminer.servertester.config.TestConfig;
 import ru.byprogminer.servertester.config.TestRunConfig;
+import ru.byprogminer.servertester.server.AsyncTestServer;
 import ru.byprogminer.servertester.server.BlockingTestServer;
 import ru.byprogminer.servertester.server.NonBlockingTestServer;
 import ru.byprogminer.servertester.server.TestServer;
@@ -142,8 +143,7 @@ public class TestRunner {
 
         architectures.put(TestConfig.Architecture.BLOCK, BlockingTestServer::new);
         architectures.put(TestConfig.Architecture.NONBLOCK, NonBlockingTestServer::new);
-
-        // TODO async server
+        architectures.put(TestConfig.Architecture.ASYNC, AsyncTestServer::new);
 
         return Collections.unmodifiableMap(architectures);
     }

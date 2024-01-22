@@ -29,4 +29,14 @@ public final class Utils {
             throw new RuntimeException("wut");
         }
     }
+
+    public static int minPowerOfTwo(int n) {
+        final int mostSignificantBit = Integer.highestOneBit(n);
+
+        if (n == mostSignificantBit) {
+            return n;
+        }
+
+        return mostSignificantBit << 1;
+    }
 }
