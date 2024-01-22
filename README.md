@@ -129,6 +129,6 @@ request_delta:0..100,10
 
 | Переменный параметр | Computation time | Server request time | Client request time |
 |:--------------------|:----------------:|:-------------------:|:-------------------:|
-| Array size | ![](./plots/array_size/computation time.png) | ![](./plots/array_size/server request time.png) | ![](./plots/array_size/client request time.png) |
-| Clients | ![](./plots/clients/computation time.png) | ![](./plots/clients/server request time.png) | ![](./plots/clients/client request time.png) |
-| Request delta | ![](./plots/request_delta/computation time.png) | ![](./plots/request_delta/server request time.png) | ![](./plots/request_delta/client request time.png) |
+| Array size | <img src="./plots/array_size/computation time.png"> | <img src="./plots/array_size/server request time.png"> | <img src="./plots/array_size/client request time.png"> |
+| Clients | <img src="./plots/clients/computation time.png"> | <img src="./plots/clients/server request time.png"> | <img src="./plots/clients/client request time.png"> |
+| Request delta | <img src="./plots/request_delta/computation time.png"> | <img src="./plots/request_delta/server request time.png"> | <img src="./plots/request_delta/client request time.png"> |
