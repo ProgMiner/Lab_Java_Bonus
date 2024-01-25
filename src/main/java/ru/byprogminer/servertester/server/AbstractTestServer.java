@@ -7,12 +7,13 @@ import ru.byprogminer.servertester.config.TestRunConfig;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 
 public abstract class AbstractTestServer implements TestServer {
@@ -71,11 +72,11 @@ public abstract class AbstractTestServer implements TestServer {
     private static byte[] handleRequest0(byte[] request) throws InvalidProtocolBufferException {
         final Messages.SortRequest sortRequest = Messages.SortRequest.parseFrom(request);
 
-        final Integer[] values = sortRequest.getValueList().toArray(new Integer[0]);
-        Arrays.sort(values);
+        final int[] values = sortRequest.getValueList().stream().mapToInt(Integer::intValue).toArray();
+        Utils.cringeSort(values);
 
         final Messages.SortResponse sortResponse = Messages.SortResponse.newBuilder()
-                .addAllValue(Arrays.asList(values))
+                .addAllValue(IntStream.of(values).boxed().collect(Collectors.toList()))
                 .build();
 
         return sortResponse.toByteArray();

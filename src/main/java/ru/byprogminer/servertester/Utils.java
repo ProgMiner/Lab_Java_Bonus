@@ -39,4 +39,23 @@ public final class Utils {
 
         return mostSignificantBit << 1;
     }
+
+    public static void cringeSort(int[] array) {
+        for (int i = 0; i < array.length - 1; ++i) {
+            final int x = array[i];
+
+            int y = x;
+            int k = i;
+
+            for (int j = i + 1; j < array.length; ++j) {
+                if (y > array[j]) {
+                    y = array[j];
+                    k = j;
+                }
+            }
+
+            array[i] = y;
+            array[k] = x;
+        }
+    }
 }
