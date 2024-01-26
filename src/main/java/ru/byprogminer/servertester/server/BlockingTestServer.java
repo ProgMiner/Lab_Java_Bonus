@@ -81,12 +81,19 @@ public class BlockingTestServer extends AbstractTestServer implements TestServer
                 if (clients.put(socket, client) != null) {
                     throw new IllegalStateException("duplicate socket");
                 }
+
+                clientsLatch.countDown();
             }
         } catch (Throwable e) {
             addException(e);
         } finally {
             taskExecutor.shutdown();
         }
+    }
+
+    @Override
+    protected int getConnectedClients() {
+        return clients.size();
     }
 
     private class Client {
@@ -113,6 +120,8 @@ public class BlockingTestServer extends AbstractTestServer implements TestServer
 
         private void clientRoutine() {
             try (final Socket ignored = socket) {
+                clientsLatch.await();
+
                 final DataInputStream in = new DataInputStream(socket.getInputStream());
                 final DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 
@@ -145,7 +154,7 @@ public class BlockingTestServer extends AbstractTestServer implements TestServer
                                     out.writeInt(response.length);
                                     out.write(response);
 
-                                    metrics.handleTime.addAndGet(System.currentTimeMillis() - requestBeginTime);
+                                    measureMetrics(t -> metrics.handleTime.addAndGet(t - requestBeginTime));
                                 } catch (Throwable e) {
                                     addException(e);
                                 }

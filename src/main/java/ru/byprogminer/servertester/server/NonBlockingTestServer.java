@@ -84,6 +84,7 @@ public class NonBlockingTestServer extends AbstractTestServer implements TestSer
                 }
 
                 readThread.registerClient(new Client(channel));
+                clientsLatch.countDown();
             }
         } catch (Throwable e) {
             addException(e);
@@ -98,6 +99,11 @@ public class NonBlockingTestServer extends AbstractTestServer implements TestSer
 
             taskExecutor.shutdown();
         }
+    }
+
+    @Override
+    protected int getConnectedClients() {
+        return clients.size();
     }
 
     private class ReadThread extends Thread {
@@ -123,6 +129,8 @@ public class NonBlockingTestServer extends AbstractTestServer implements TestSer
         @Override
         public void run() {
             try (final Selector ignored = selector) {
+                clientsLatch.await();
+
                 while (selector.isOpen()) {
                     selector.select();
 
@@ -229,6 +237,8 @@ public class NonBlockingTestServer extends AbstractTestServer implements TestSer
         @Override
         public void run() {
             try (final Selector ignored = selector) {
+                clientsLatch.await();
+
                 while (selector.isOpen()) {
                     selector.select();
 
@@ -256,7 +266,7 @@ public class NonBlockingTestServer extends AbstractTestServer implements TestSer
                         client.channel.write(currentAnswer.buffer);
 
                         if (!currentAnswer.buffer.hasRemaining()) {
-                            metrics.handleTime.addAndGet(System.currentTimeMillis() - currentAnswer.requestTime);
+                            measureMetrics(t -> metrics.handleTime.addAndGet(t - currentAnswer.requestTime));
                             client.answers.poll();
                         }
                     }

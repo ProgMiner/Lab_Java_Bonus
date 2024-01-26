@@ -10,8 +10,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -21,6 +23,7 @@ public abstract class AbstractTestServer implements TestServer {
     protected final TestRunConfig config;
 
     protected final ServerTestMetrics metrics;
+    protected final CountDownLatch clientsLatch;
 
     protected final ExecutorService taskExecutor = Executors
             .newFixedThreadPool(Runtime.getRuntime().availableProcessors());
@@ -31,6 +34,7 @@ public abstract class AbstractTestServer implements TestServer {
         this.config = config;
 
         this.metrics = new ServerTestMetrics(config.clients * config.clientRequests);
+        this.clientsLatch = new CountDownLatch(config.clients);
     }
 
     @Override
@@ -55,6 +59,16 @@ public abstract class AbstractTestServer implements TestServer {
         return result;
     }
 
+    protected abstract int getConnectedClients();
+
+    protected void measureMetrics(Consumer<Long> block) {
+        final long time = System.currentTimeMillis();
+
+        if (getConnectedClients() == config.clients) {
+            block.accept(time);
+        }
+    }
+
     protected void addException(Throwable e) {
         exceptions.add(e);
     }
@@ -64,8 +78,7 @@ public abstract class AbstractTestServer implements TestServer {
 
         final byte[] response = handleRequest0(request);
 
-        metrics.computationTime.addAndGet(System.currentTimeMillis() - beginTime);
-
+        measureMetrics(t -> metrics.computationTime.addAndGet(t - beginTime));
         return response;
     }
 

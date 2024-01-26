@@ -35,7 +35,17 @@ public class AsyncTestServer extends AbstractTestServer implements TestServer {
                 final Client client = new Client(channel);
 
                 clients.put(channel, client);
-                channel.read(client.buffer, client, client);
+                clientsLatch.countDown();
+
+                new Thread(() -> {
+                    try {
+                        clientsLatch.await();
+                    } catch (InterruptedException e) {
+                        // ignored
+                    }
+
+                    channel.read(client.buffer, client, client);
+                }).start();
 
                 serverChannel.accept(null, this);
             }
@@ -72,6 +82,11 @@ public class AsyncTestServer extends AbstractTestServer implements TestServer {
         } catch (IOException e) {
             throw new IllegalStateException(e);
         }
+    }
+
+    @Override
+    protected int getConnectedClients() {
+        return clients.size();
     }
 
     private class Client implements CompletionHandler<Integer, Client> {
@@ -197,7 +212,7 @@ public class AsyncTestServer extends AbstractTestServer implements TestServer {
                 throw new IllegalArgumentException("wut");
             }
 
-            metrics.handleTime.addAndGet(System.currentTimeMillis() - requestTime);
+            measureMetrics(t -> metrics.handleTime.addAndGet(t - requestTime));
             requestTime = 0;
 
             buffer.clear();
