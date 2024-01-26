@@ -141,27 +141,25 @@ public class NonBlockingTestServer extends AbstractTestServer implements TestSer
                         it.remove();
 
                         try {
-                            while (client.channel.read(client.readBuffer) > 0) {
-                                if (client.previousRequestTime == 0) {
-                                    client.previousRequestTime = System.currentTimeMillis();
-                                }
-
-                                if (!client.readBuffer.hasRemaining()) {
-                                    client.readBuffer.flip();
-
-                                    final ByteBuffer newBuffer = ByteBuffer
-                                            .allocate(client.readBuffer.remaining() * 2);
-
-                                    newBuffer.put(client.readBuffer);
-                                    client.readBuffer = newBuffer;
-                                }
-                            }
+                            client.channel.read(client.readBuffer);
                         } catch (IOException e) {
                             if (!client.channel.isOpen()) {
                                 continue;
                             }
 
                             throw e;
+                        }
+
+                        if (client.previousRequestTime == 0) {
+                            client.previousRequestTime = System.currentTimeMillis();
+                        }
+
+                        if (!client.readBuffer.hasRemaining()) {
+                            client.readBuffer.flip();
+
+                            final ByteBuffer newBuffer = ByteBuffer.allocate(client.readBuffer.remaining() * 2);
+                            newBuffer.put(client.readBuffer);
+                            client.readBuffer = newBuffer;
                         }
 
                         if (client.readBuffer.position() < Integer.BYTES) {
@@ -249,21 +247,17 @@ public class NonBlockingTestServer extends AbstractTestServer implements TestSer
                         final Client client = (Client) key.attachment();
                         it.remove();
 
-                        Answer currentAnswer;
-                        while (
-                                (currentAnswer = client.answers.peek()) != null
-                                && client.channel.write(currentAnswer.buffer) > 0
-                        ) {
-                            if (!currentAnswer.buffer.hasRemaining()) {
-                                metrics.handleTime
-                                        .addAndGet(System.currentTimeMillis() - currentAnswer.requestTime);
-
-                                client.answers.poll();
-                            }
-                        }
-
+                        final Answer currentAnswer = client.answers.peek();
                         if (currentAnswer == null) {
                             key.cancel();
+                            continue;
+                        }
+
+                        client.channel.write(currentAnswer.buffer);
+
+                        if (!currentAnswer.buffer.hasRemaining()) {
+                            metrics.handleTime.addAndGet(System.currentTimeMillis() - currentAnswer.requestTime);
+                            client.answers.poll();
                         }
                     }
                 }
