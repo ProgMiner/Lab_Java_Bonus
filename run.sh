@@ -2,7 +2,7 @@
 
 
 archs='block nonblock async'
-params='array_size:10000..100000,1000 clients:1..100,1 request_delta:0..100,10'
+params='array_size:1000..10000,1000 clients:10..100,10 request_delta:0..100,10'
 
 for param in $params ; do
     param_name=${param%%:*}
